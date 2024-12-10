@@ -35,7 +35,7 @@ class LocationUtils(val context: Context) {
         }
 
         val locationRequest = LocationRequest.Builder(
-            Priority.PRIORITY_HIGH_ACCURACY, 1000).build()
+            Priority.PRIORITY_HIGH_ACCURACY, 100000).build()
 
         _fusedLocationClient.requestLocationUpdates(locationRequest, locationCallBack, Looper.getMainLooper())
 
