@@ -12,20 +12,21 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import com.learning.locationapp.ui.theme.LocationAppTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,11 +48,27 @@ class MainActivity : ComponentActivity() {
 
 
 @Composable
-fun MyApp(viewModel: LocationViewModel){
+fun MyApp(viewModel: LocationViewModel) {
     val context = LocalContext.current
     val locationUtils = LocationUtils(context)
+    val navController = rememberNavController()
 
-    LocationDisplay(locationUtils, viewModel, context)
+    // Start the navigation host
+    NavHost(navController = navController, startDestination = "location_display") {
+        composable("location_display") {
+            LocationDisplay(locationUtils, viewModel, context, navController)
+        }
+        composable("location_selection") {
+            LocationSelectionScreen(
+                location = LocationData(viewModel.location.value?.latitude ?: 23.6850,
+                    viewModel.location.value?.longitude ?: 90.3563),
+                onLocationSelected = { selectedLocation ->
+                    viewModel.updateLocation(selectedLocation)
+                    navController.popBackStack()
+                }
+            )
+        }
+    }
 }
 
 
@@ -59,11 +76,12 @@ fun MyApp(viewModel: LocationViewModel){
 fun LocationDisplay(
     locationUtils: LocationUtils,
     viewModel: LocationViewModel,
-    context: Context
+    context: Context,
+    navController: NavHostController
 ) {
-
     val location = viewModel.location.value
 
+    // Recalculate the address whenever the location changes
     val address = location?.let { locationUtils.reverseGeocodeLocation(location) }
 
     val requestPermissionLauncher = rememberLauncherForActivityResult(
@@ -106,7 +124,8 @@ fun LocationDisplay(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        if(location != null ) {
+        if (location != null) {
+            // Display the updated location and address dynamically
             Text(text = "Latitude: ${location.latitude}")
             Text(text = "Longitude: ${location.longitude}")
             Text(text = "Address: $address")
@@ -129,5 +148,13 @@ fun LocationDisplay(
         }) {
             Text(text = "Get Location")
         }
+
+        Button(onClick = {
+            navController.navigate("location_selection")
+        }) {
+            Text(text = "Set Location")
+        }
     }
 }
+
+
