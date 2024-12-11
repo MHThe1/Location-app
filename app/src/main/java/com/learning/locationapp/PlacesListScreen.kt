@@ -130,50 +130,31 @@ fun EditPlaceDialog(
     onSave: (Place) -> Unit
 ) {
     var title by remember { mutableStateOf(place.title) }
-    var lat by remember { mutableStateOf(place.lat) }
-    var lon by remember { mutableStateOf(place.lon) }
+    var lat by remember { mutableStateOf(place.lat.toString()) }
+    var lon by remember { mutableStateOf(place.lon.toString()) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = {
-            Text(text = "Edit Place")
-        },
+        title = { Text("Edit Place") },
         text = {
-            Column {
-                TextField(
-                    value = title,
-                    onValueChange = { title = it },
-                    label = { Text("Title") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                TextField(
-                    value = lat.toString(),
-                    onValueChange = { lat = it.toDoubleOrNull() ?: 0.0 },
-                    label = { Text("Latitude") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                TextField(
-                    value = lon.toString(),
-                    onValueChange = { lon = it.toDoubleOrNull() ?: 0.0 },
-                    label = { Text("Longitude") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
+            PlaceForm(
+                title = title,
+                onTitleChange = { title = it },
+                lat = lat,
+                onLatChange = { lat = it },
+                lon = lon,
+                onLonChange = { lon = it }
+            )
         },
         confirmButton = {
-            TextButton(
-                onClick = {
-                    // When the user clicks "Save", create an updated place and send it to the ViewModel
-                    val updatedPlace = place.copy(title = title, lat = lat, lon = lon)
-                    onSave(updatedPlace)
-                }
-            ) {
+            TextButton(onClick = {
+                val updatedPlace = place.copy(
+                    title = title,
+                    lat = lat.toDoubleOrNull() ?: place.lat,
+                    lon = lon.toDoubleOrNull() ?: place.lon
+                )
+                onSave(updatedPlace)
+            }) {
                 Text("Save")
             }
         },
@@ -184,7 +165,6 @@ fun EditPlaceDialog(
         }
     )
 }
-
 
 
 

@@ -34,6 +34,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val viewModel: LocationViewModel = viewModel()
+            val placesViewModel: PlacesViewModel = viewModel()
             LocationAppTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -41,12 +42,20 @@ class MainActivity : ComponentActivity() {
                 ) {
 //                    MyApp(viewModel)
 //                    PlacesScreen()
-                    PlacesListScreen()
+//                    PlacesListScreen()
+                    CreateEntityScreen(
+                        viewModel = placesViewModel,
+                        onEntityCreated = {
+                            // Logic for what happens after the entity is created
+                        }
+                    )
+
                 }
             }
         }
     }
 }
+
 
 
 @Composable
