@@ -7,7 +7,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -16,9 +18,7 @@ import com.google.maps.android.compose.*
 import coil3.compose.rememberAsyncImagePainter
 import com.google.android.gms.maps.model.CameraPosition
 
-
 const val BASE_URL = "https://labs.anontech.info/cse489/t3/"
-
 
 @Composable
 fun PlacesScreen(
@@ -55,7 +55,7 @@ fun PlacesScreen(
         }
 
         selectedPlace?.let { place ->
-            PlaceDetailsDialog(
+            PlaceDetailsBottomSheet(
                 place = place,
                 onImageClick = { isImageEnlarged = true },
                 onClose = { selectedPlace = null }
@@ -67,71 +67,92 @@ fun PlacesScreen(
     if (isImageEnlarged && selectedPlace != null) {
         EnlargedImageDialog(
             imageUrl = selectedPlace!!.imageUrl,
+            title = selectedPlace!!.title,
             onDismiss = { isImageEnlarged = false }
         )
     }
 }
 
-
-
-
 @Composable
-fun PlaceDetailsDialog(place: Place, onImageClick: () -> Unit, onClose: () -> Unit) {
-    android.util.Log.d("MapEntriesItem", "Image URL: ${place.image}")
+fun PlaceDetailsBottomSheet(place: Place, onImageClick: () -> Unit, onClose: () -> Unit) {
     val imageStr = place.image
-    android.util.Log.d("ImageStr", "Image str: $imageStr")
     val fullImageUrl = "$BASE_URL${place.image}"
 
-    AlertDialog(
-        onDismissRequest = onClose,
-        title = {
-            Text(text = place.title)
-        },
-        text = {
+    // Bottom sheet-like view for place details
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        contentAlignment = Alignment.BottomEnd
+    ) {
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = MaterialTheme.shapes.medium
+        ) {
             Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                if(place.image!="images/"){
+                Text(text = place.title, style = MaterialTheme.typography.titleMedium)
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                if (place.image != "images/") {
                     Image(
                         painter = rememberAsyncImagePainter(fullImageUrl),
                         contentDescription = place.title,
                         modifier = Modifier
+                            .height(100.dp)
                             .fillMaxWidth()
-                            .height(200.dp)
+                            .graphicsLayer(
+                                scaleX = 0.5f,  // Initially scaled down
+                                scaleY = 0.5f   // Initially scaled down
+                            )
                             .clickable(onClick = onImageClick),
-                        contentScale = ContentScale.FillHeight
+                        contentScale = ContentScale.Fit
                     )
                 } else {
                     Text(text = "No Image Available")
                 }
-
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onClose) {
-                Text("Close")
             }
         }
-    )
+    }
 }
 
-
 @Composable
-fun EnlargedImageDialog(imageUrl: String, onDismiss: () -> Unit) {
+fun EnlargedImageDialog(imageUrl: String, title: String, onDismiss: () -> Unit) {
     Dialog(onDismissRequest = onDismiss) {
-        Surface(modifier = Modifier.fillMaxSize(), shape = MaterialTheme.shapes.medium) {
+        Surface(
+            modifier = Modifier
+                .fillMaxSize(),
+            shape = MaterialTheme.shapes.medium
+        ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
+                Text(text = title, style = MaterialTheme.typography.headlineLarge, modifier = Modifier.padding(16.dp))
+
+                Spacer(modifier = Modifier.height(20.dp))
+
                 Image(
                     painter = rememberAsyncImagePainter(imageUrl),
                     contentDescription = "Enlarged Image",
-                    modifier = Modifier.fillMaxWidth(),
-                    contentScale = ContentScale.Crop
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight(),
+                    contentScale = ContentScale.Fit
                 )
             }
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun EnlargedImageDialogPreview() {
+    // Simulating an image URL for preview purposes
+    EnlargedImageDialog(imageUrl = "https://labs.anontech.info/cse489/t3/images/resized_image.jpg", title = "Sample Title", onDismiss = {})
 }

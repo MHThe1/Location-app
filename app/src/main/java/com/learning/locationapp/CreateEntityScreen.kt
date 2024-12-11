@@ -25,7 +25,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.input.KeyboardType
@@ -246,7 +245,11 @@ fun CreateEntityScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         resultMessage.value?.let {
-            Text(text = it, color = if (it.contains("successfully")) Color.Green else Color.Red)
+            Toast.makeText(
+                context,
+                it,
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 }
