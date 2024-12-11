@@ -10,3 +10,7 @@ data class Place(
     val imageUrl: String
         get() = "https://labs.anontech.info/cse489/t3/$image"
 }
+
+data class UpdateResponse(
+    val status: String
+)

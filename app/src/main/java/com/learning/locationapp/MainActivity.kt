@@ -40,7 +40,8 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
 //                    MyApp(viewModel)
-                    PlacesScreen()
+//                    PlacesScreen()
+                    PlacesListScreen()
                 }
             }
         }
