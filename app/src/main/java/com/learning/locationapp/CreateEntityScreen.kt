@@ -15,12 +15,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -30,10 +28,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.core.app.ActivityCompat
 import android.content.Context
 import java.io.File
 import java.io.FileOutputStream
@@ -202,7 +197,7 @@ fun CreateEntityScreen(
                                     imagePath = imagePath
                                 )
                                 resultMessage.value = "Entity created successfully!"
-                                onEntityCreated() // Trigger callback after successful creation
+                                onEntityCreated()
                             } catch (e: Exception) {
                                 // Handle any errors that occur during entity creation
                                 resultMessage.value = "Failed to create entity: ${e.message}"

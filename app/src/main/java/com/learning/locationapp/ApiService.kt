@@ -9,7 +9,6 @@ import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Part
-import java.io.File
 
 interface ApiService {
     @GET("api.php")
