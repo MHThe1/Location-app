@@ -1,6 +1,8 @@
 package com.learning.locationapp
 
 import android.Manifest
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
@@ -26,14 +28,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.launch
 import androidx.compose.ui.text.input.KeyboardType
 import android.content.Context
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
-
-
 
 object FileUtils {
     fun getPathFromUri(context: Context, uri: Uri): String? {
@@ -51,7 +51,6 @@ object FileUtils {
         }
     }
 }
-
 
 @Composable
 fun CreateEntityScreen(
@@ -105,6 +104,32 @@ fun CreateEntityScreen(
             Log.d("CreateEntityScreen", "Selected image URI: $uri")
         }
     )
+
+    // Resize image function using Coil
+    fun resizeImage(context: Context, uri: Uri, maxWidth: Int = 800, maxHeight: Int = 800): File? {
+        return try {
+            val inputStream = context.contentResolver.openInputStream(uri)
+            val originalBitmap = BitmapFactory.decodeStream(inputStream)
+
+            val aspectRatio = originalBitmap.width.toFloat() / originalBitmap.height.toFloat()
+            val newWidth = if (originalBitmap.width > originalBitmap.height) maxWidth else (maxHeight * aspectRatio).toInt()
+            val newHeight = if (originalBitmap.height > originalBitmap.width) maxHeight else (maxWidth / aspectRatio).toInt()
+
+            val resizedBitmap = Bitmap.createScaledBitmap(originalBitmap, newWidth, newHeight, true)
+
+            // Save resized bitmap to a temporary file
+            val file = File(context.cacheDir, "resized_image.jpg")
+            val outputStream = FileOutputStream(file)
+            resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream)
+            outputStream.flush()
+            outputStream.close()
+
+            file
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Text(text = "Create Entity")
@@ -183,10 +208,10 @@ fun CreateEntityScreen(
                     isLoading.value = true
                     resultMessage.value = null
 
-                    // Get the image file path
-                    val imagePath = FileUtils.getPathFromUri(context, imageUri)
-                    if (imagePath != null) {
-                        // Call ViewModel to create the entity with try-catch block
+                    // Resize the image before uploading
+                    val resizedImageFile = resizeImage(context, imageUri)
+                    if (resizedImageFile != null) {
+                        // Call ViewModel to create the entity with resized image file path
                         viewModel.viewModelScope.launch {
                             try {
                                 // Call createPlace in ViewModel
@@ -194,27 +219,23 @@ fun CreateEntityScreen(
                                     title = title.value,
                                     lat = latDouble,
                                     lon = lonDouble,
-                                    imagePath = imagePath
+                                    imagePath = resizedImageFile.absolutePath
                                 )
                                 resultMessage.value = "Entity created successfully!"
                                 onEntityCreated()
                             } catch (e: Exception) {
-                                // Handle any errors that occur during entity creation
                                 resultMessage.value = "Failed to create entity: ${e.message}"
                             } finally {
-                                // Reset loading state after operation completes
                                 isLoading.value = false
                             }
                         }
                     } else {
-                        resultMessage.value = "Failed to process the selected image."
+                        resultMessage.value = "Failed to resize the selected image."
                         isLoading.value = false
                     }
                 } else {
                     resultMessage.value = "Please fill out all fields."
                 }
-
-
             },
             modifier = Modifier.fillMaxWidth(),
             enabled = !isLoading.value
