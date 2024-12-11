@@ -42,11 +42,21 @@ fun LocationApp(modifier: Modifier = Modifier) {
     val locationViewModel: LocationViewModel = viewModel()
     val placesViewModel: PlacesViewModel = viewModel()
 
-    ModalNavigationDrawer(drawerContent = {
-        ModalDrawerSheet {
-            DrawerContent(navController = navController)
-        }
-    }, drawerState = drawerState) {
+    ModalNavigationDrawer(
+        drawerContent = {
+            ModalDrawerSheet {
+                DrawerContent(
+                    navController = navController,
+                    onItemClick = {
+                        // Close the drawer when an item is clicked
+                        scope.launch { drawerState.close() }
+                    }
+                )
+            }
+        },
+        drawerState = drawerState,
+        gesturesEnabled = false
+    ) {
         Scaffold(
             topBar = {
                 TopBar(
@@ -80,8 +90,9 @@ fun LocationApp(modifier: Modifier = Modifier) {
     }
 }
 
+
 @Composable
-fun DrawerContent(navController: NavController) {
+fun DrawerContent(navController: NavController, onItemClick: () -> Unit) {
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
 
     Column(modifier = Modifier.padding(16.dp)) {
@@ -96,21 +107,24 @@ fun DrawerContent(navController: NavController) {
             label = "Home",
             icon = Icons.Default.Home,
             isSelected = currentRoute == "placesScreen",
-            onClick = { navController.navigate("placesScreen") }
+            onClick = { navController.navigate("placesScreen")
+                onItemClick()}
         )
 
         DrawerItem(
             label = "Create Entity",
             icon = Icons.Default.Build,
             isSelected = currentRoute == "createEntity",
-            onClick = { navController.navigate("createEntity") }
+            onClick = { navController.navigate("createEntity")
+                onItemClick()}
         )
 
         DrawerItem(
             label = "View Entities",
             icon = Icons.Default.Menu,
             isSelected = currentRoute == "viewEntities",
-            onClick = { navController.navigate("viewEntities") }
+            onClick = { navController.navigate("viewEntities")
+                onItemClick()}
         )
     }
 }

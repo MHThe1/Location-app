@@ -11,6 +11,8 @@ import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.HttpException
 import java.io.File
 import java.io.IOException
@@ -52,24 +54,35 @@ class PlacesViewModel : ViewModel() {
         }
     }
 
-    fun createPlace(title: String, lat: Double, lon: Double) {
+    fun createPlace(title: String, lat: Double, lon: Double, imagePath: String) {
+        // Create request bodies for the text fields
+        val titleBody = title.toRequestBody("text/plain".toMediaTypeOrNull())
+        val latBody = lat.toString().toRequestBody("text/plain".toMediaTypeOrNull())
+        val lonBody = lon.toString().toRequestBody("text/plain".toMediaTypeOrNull())
+
+        // Create a file part for the image
+        val file = File(imagePath)
+        val requestFile = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
+        val imagePart = MultipartBody.Part.createFormData("image", file.name, requestFile)
+
         viewModelScope.launch {
             _createEntityState.value = ApiState.Loading
 
             try {
-                // Call API to create a place (no image handling)
+                // Call the API
                 val response = RetrofitInstance.api.createPlace(
-                    title = title,
-                    lat = lat,
-                    lon = lon
+                    title = titleBody,
+                    lat = latBody,
+                    lon = lonBody,
+                    image = imagePart
                 )
 
-                // Check if the response contains a valid id
-                if (response.id > 0) {
-                    _createEntityState.value = ApiState.Success("Entity created successfully!")
-                    fetchPlaces() // Refresh the list after creation
+                // Handle the API response
+                if (response.id > 0) { // Check if 'id' is returned
+                    _createEntityState.value = ApiState.Success("Place created with ID: ${response.id}")
+                    fetchPlaces() // Refresh the list
                 } else {
-                    _createEntityState.value = ApiState.Error("Failed to create entity.")
+                    _createEntityState.value = ApiState.Error("Failed to create place.")
                 }
 
             } catch (e: IOException) {
@@ -81,6 +94,9 @@ class PlacesViewModel : ViewModel() {
             }
         }
     }
+
+
+
 
 
 

@@ -25,11 +25,13 @@ interface ApiService {
         @Field("image") image: String
     ): UpdateResponse
 
-    @FormUrlEncoded
+    @Multipart
     @POST("api.php")
     suspend fun createPlace(
-        @Field("title") title: String,
-        @Field("lat") lat: Double,
-        @Field("lon") lon: Double
+        @Part("title") title: RequestBody,
+        @Part("lat") lat: RequestBody,
+        @Part("lon") lon: RequestBody,
+        @Part image: MultipartBody.Part
     ): CreateResponse
+
 }
