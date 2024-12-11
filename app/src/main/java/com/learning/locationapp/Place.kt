@@ -131,12 +131,21 @@ fun CreateEntityScreen(
         }
     )
 
-    // Log the location whenever it's updated in the ViewModel
+    // Get the current location from the ViewModel
     val location = locationViewModel.location.value
-    if (location != null) {
-        Log.d("CreateEntityScreen", "Received location: $location") // Log the location in CreateEntityScreen
-        lat.value = location.latitude.toString()
-        lon.value = location.longitude.toString()
+
+    // Update the title based on the location's latitude and longitude using reverse geocoding
+    location?.let {
+        title.value = locationUtils.reverseGeocodeLocation(it)
+        lat.value = it.latitude.toString()
+        lon.value = it.longitude.toString()
+    }
+
+    // Log the location whenever it's updated
+    LaunchedEffect(location) {
+        if (location != null) {
+            Log.d("CreateEntityScreen", "Received location: $location")
+        }
     }
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
